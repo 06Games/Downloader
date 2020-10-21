@@ -1,8 +1,5 @@
 name: Build
-
-on:
-  release:
-    types: [published]
+on: push
 
 jobs:
   build:
@@ -18,12 +15,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.101
-
       - name: Build
         shell: bash
         run: dotnet publish Downloader/Downloader.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" -c Release -o "${{ matrix.os }}"
