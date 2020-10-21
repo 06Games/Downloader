@@ -1,8 +1,8 @@
-{
+﻿{
   "profiles": {
     "Downloader": {
       "commandName": "Project",
-      "commandLineArgs": "https://www.france.tv/france-2/direct.html"
+      "commandLineArgs": "-v https://www.france.tv/france-2/direct.html"
     }
   }
 }
