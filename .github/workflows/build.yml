@@ -1,25 +1,19 @@
-name: Publish
+name: Build
 
 on:
   release:
     types: [published]
 
 jobs:
-  release:
-    name: Release
+  build:
+    name: Build
     strategy:
       matrix:
-        kind: ['linux', 'windows', 'macOS']
+        kind: ['windows']
         include:
-          - kind: linux
-            os: ubuntu-latest
-            target: linux-x64
           - kind: windows
             os: windows-latest
             target: win-x64
-          - kind: macOS
-            os: macos-latest
-            target: osx-x64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -32,27 +26,9 @@ jobs:
 
       - name: Build
         shell: bash
-        run: |
-          tag=$(git describe --tags --abbrev=0)
-          release_name="Downloader-$tag-${{ matrix.target }}"
-
-          # Build everything
-          dotnet publish Downloader/Downloader.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-
-          # Pack files
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
-            # Pack to zip for Windows
-            7z a -tzip "${release_name}.zip" "./${release_name}/*"
-          else
-          tar czvf "${release_name}.tar.gz" "$release_name"
-          fi
-
-          # Delete output directory
-          rm -r "$release_name"
-
-      - name: Publish
-        uses: softprops/action-gh-release@v1
+        run: dotnet publish Downloader/Downloader.csproj --framework netcoreapp3.1 --runtime "${{ matrix.target }}" -c Release -o "${{ matrix.os }}"
+      - name: Upload build
+        uses: actions/upload-artifact@v1
         with:
-          files: "Downloader*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ matrix.os }}
+          path: ${{ matrix.os }}
