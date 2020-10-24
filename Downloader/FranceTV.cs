@@ -10,6 +10,8 @@ namespace Downloader
     public class FranceTV
     {
         readonly static string headers = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.21 Safari/537.36\\r\\nAccept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\\r\\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\\r\\nAccept-Encoding: gzip, deflate\\r\\nAccept-Language: en-us,en;q=0.5\\r\\n";
+        readonly static string format = "mkv";
+
         public static async Task GetVideo(string inputUrl)
         {
             Utils.Log("France TV", "Downloading webpage");
@@ -30,8 +32,10 @@ namespace Downloader
             var subtitles = infos.SelectToken("subtitles").FirstOrDefault(s => s.Value<string>("format") == "vtt");
 
             var args = $"-y -hide_banner -headers \"{headers}\" -i \"{streamUrl}\"";
-            if (subtitles != null) args += $" -i \"{subtitles.Value<string>("url")}\" -c copy -c:s mov_text";
-            args += $" -t {Program.duration} -f mp4 \"{Program.output}{infos.Value<string>("titre")} - {infos.Value<string>("sous_titre")}.mp4\"";
+            if (subtitles != null) args += $" -i \"{subtitles.Value<string>("url")}\" -c copy -c:s srt";
+            else args += $" -c copy";
+            if (Program.duration != TimeSpan.Zero) args += $" -t {Program.duration}";
+            args += $" \"{Program.output}{infos.Value<string>("titre")} - {infos.Value<string>("sous_titre")}.{format}\"";
             if (Program.verbose) Utils.Log("France TV", $"Launching ffmpeg with the following arguments:\n\t{args}");
             else Utils.Log("France TV", "Launching ffmpeg and starting download");
             await Utils.RunProcessAsync(new System.Diagnostics.ProcessStartInfo { FileName = "ffmpeg.exe", Arguments = args, RedirectStandardOutput = true });
