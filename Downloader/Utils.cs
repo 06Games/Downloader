@@ -14,17 +14,26 @@ namespace Downloader
             Console.Write($"{msg}\n");
         }
 
-        public static Task<int> RunProcessAsync(System.Diagnostics.ProcessStartInfo startInfo)
+        public static async Task<int> RunProcessAsync(System.Diagnostics.ProcessStartInfo startInfo)
         {
-            var tcs = new TaskCompletionSource<int>();
-            if (Program.test) tcs.SetResult(0);
+            int result = -1;
+            if (Program.test) result = 0;
             else
             {
                 var process = new System.Diagnostics.Process { StartInfo = startInfo, EnableRaisingEvents = true };
-                process.Exited += (sender, args) => { tcs.SetResult(process.ExitCode); process.Dispose(); };
+                process.Exited += (sender, args) => { result = process.ExitCode; process.Dispose(); };
+
+                var start = Program.start - DateTime.Now;
+                while (Program.start - DateTime.Now - TimeSpan.FromSeconds(5) > TimeSpan.Zero)
+                {
+                    Log("Timer", $"Waiting for {(Program.start - DateTime.Now).ToString("hh:mm:ss")}");
+                    await Task.Delay(5000);
+                }
+
                 process.Start();
+                try { while (!process.HasExited) await Task.Delay(500); } catch { /* The process has been disposed */ }
             }
-            return tcs.Task;
+            return result;
         }
     }
 }

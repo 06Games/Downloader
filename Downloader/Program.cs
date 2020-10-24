@@ -9,6 +9,8 @@ namespace Downloader
         public static string output;
         public static bool verbose;
         public static bool test;
+        public static DateTime start = DateTime.MinValue;
+        public static TimeSpan duration = TimeSpan.Zero;
 
         readonly static string[] testUrls = new[] {
             //France TV
@@ -30,6 +32,8 @@ namespace Downloader
                 Console.WriteLine("-v\tDisplays more detailed logs");
                 Console.WriteLine("-o\tThe output path (default is current dir)");
                 Console.WriteLine("-test\tSend requests to test that the websites are correctly implemented");
+                Console.WriteLine("-start\tRecording start time");
+                Console.WriteLine("-duration\tDuration of recording");
                 Console.WriteLine("");
                 return;
             }
@@ -37,6 +41,8 @@ namespace Downloader
             verbose = args.Contains("-v");
             test = args.Contains("-test");
             output = args.Contains("-o") ? args[Array.IndexOf(args, "-o") + 1].TrimEnd('/', '\\') + System.IO.Path.DirectorySeparatorChar : "";
+            if (args.Contains("-start")) DateTime.TryParse(args[Array.IndexOf(args, "-start") + 1], out start);
+            if (args.Contains("-duration")) TimeSpan.TryParse(args[Array.IndexOf(args, "-duration") + 1], out duration);
 
             var url = args.LastOrDefault();
             if (test)

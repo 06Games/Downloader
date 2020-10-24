@@ -32,6 +32,7 @@ namespace Downloader
                 {"headers", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.21 Safari/537.36\\r\\nAccept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\\r\\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\\r\\nAccept-Encoding: gzip, deflate\\r\\nAccept-Language: en-us,en;q=0.5\\r\\n" },
                 { "i", streamUrl },
                 { "c", "copy" },
+                { "t", Program.duration.ToString() },
                 { "f", "flv" }
             };
             var args = _args.Select(a => $"-{a.Key}" + (a.Value != null ? $" \"{a.Value}\"" : ""));
