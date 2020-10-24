@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,12 +17,13 @@ namespace Downloader
             Utils.Log("France TV", $"Video ID: {video_id}", true);
 
             Utils.Log("France TV", "Getting informations");
-            var progInfos = await Network.GetAsync($"https://sivideo.webservices.francetelevisions.fr/tools/getInfosOeuvre/v2/?idDiffusion={video_id}");
-            var infos = JObject.Parse(progInfos);
+            var infos = JObject.Parse(await Network.GetAsync($"https://sivideo.webservices.francetelevisions.fr/tools/getInfosOeuvre/v2/?idDiffusion={video_id}"));
             Utils.Log("France TV", $"Informations:\n\t{infos.ToString()}", true);
 
             Utils.Log("France TV", "Downloading streaming playlist");
-            var streamUrl = await Network.GetAsync($"https://hdfauthftv-a.akamaihd.net/esi/TA?url={infos.SelectToken("videos[0]").Value<string>("url")}");
+            var videoFormat = infos.SelectToken("videos").FirstOrDefault(v => Path.GetExtension(v.Value<string>("url")) == ".m3u8");
+            Utils.Log("France TV", $"Selected format: {videoFormat}", true);
+            var streamUrl = await Network.GetAsync($"https://hdfauthftv-a.akamaihd.net/esi/TA?url={videoFormat.Value<string>("url")}");
             Utils.Log("France TV", $"HLS Url: {streamUrl}", true);
 
             Dictionary<string, string> _args = new Dictionary<string, string>
@@ -33,7 +35,7 @@ namespace Downloader
                 { "f", "flv" }
             };
             var args = _args.Select(a => $"-{a.Key}" + (a.Value != null ? $" \"{a.Value}\"" : ""));
-            var cmd = $"{string.Join(" ", args)} \"{infos.Value<string>("titre")}.flv\"";
+            var cmd = $"{string.Join(" ", args)} \"{Program.output}{infos.Value<string>("titre")} - {infos.Value<string>("sous_titre")}.flv\"";
             if (Program.verbose) Utils.Log("France TV", $"Launching ffmpeg with the following commande:\n\t{cmd}");
             else Utils.Log("France TV", "Launching ffmpeg and starting download");
             await Utils.RunProcessAsync(new System.Diagnostics.ProcessStartInfo { FileName = "ffmpeg.exe", Arguments = cmd, RedirectStandardOutput = true });
