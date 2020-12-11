@@ -24,11 +24,13 @@ namespace Downloader
                 process.Exited += (sender, args) => { result = process.ExitCode; process.Dispose(); };
 
                 var start = Program.start - DateTime.Now;
-                while (Program.start - DateTime.Now - TimeSpan.FromSeconds(5) > TimeSpan.Zero)
+                var refreshRate = TimeSpan.FromSeconds(1);
+                while (Program.start - DateTime.Now - refreshRate > TimeSpan.Zero)
                 {
-                    Log("Timer", $"Waiting for {(Program.start - DateTime.Now).ToString("hh:mm:ss")}");
-                    await Task.Delay(5000);
+                    Console.Write($"\rWaiting for {(Program.start - DateTime.Now).ToString("hh\\:mm\\:ss")}");
+                    await Task.Delay(refreshRate);
                 }
+                if (Program.start - DateTime.Now > TimeSpan.Zero) await Task.Delay(Program.start - DateTime.Now);
 
                 process.Start();
                 try { while (!process.HasExited) await Task.Delay(500); } catch { /* The process has been disposed */ }
